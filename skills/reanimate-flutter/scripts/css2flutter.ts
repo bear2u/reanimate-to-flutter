@@ -24,6 +24,15 @@ export function curveFor(easing: string): string {
 /** The parts of a 2D transform Flutter applies separately: translate (px), uniform scale, rotate (rad). */
 export type Transform2D = { tx: number; ty: number; scale: number; rotate: number };
 
+const px = (v: string) => parseFloat(v);
+
 export function parseTransform(css: string): Transform2D {
-  return { tx: 0, ty: 0, scale: 1, rotate: 0 };
+  const t: Transform2D = { tx: 0, ty: 0, scale: 1, rotate: 0 };
+  for (const [, fn, rawArgs] of css.matchAll(/([a-zA-Z]+)\(([^)]*)\)/g)) {
+    const args = rawArgs.split(",").map((s) => s.trim());
+    if (fn === "translate") { t.tx += px(args[0]); t.ty += args[1] ? px(args[1]) : 0; }
+    else if (fn === "translateX") t.tx += px(args[0]);
+    else if (fn === "translateY") t.ty += px(args[0]);
+  }
+  return t;
 }

@@ -23,4 +23,11 @@ describe("parseTransform", () => {
   test("shouldReturnIdentityForNone", () => {
     expect(parseTransform("none")).toEqual({ tx: 0, ty: 0, scale: 1, rotate: 0 });
   });
+
+  test("shouldReadTranslateFunctions", () => {
+    expect(parseTransform("translate(20px)")).toEqual({ tx: 20, ty: 0, scale: 1, rotate: 0 });
+    expect(parseTransform("translate(10px, 5px)")).toEqual({ tx: 10, ty: 5, scale: 1, rotate: 0 });
+    expect(parseTransform("translateX(-8px)")).toEqual({ tx: -8, ty: 0, scale: 1, rotate: 0 });
+    expect(parseTransform("translateY(40px)")).toEqual({ tx: 0, ty: 40, scale: 1, rotate: 0 });
+  });
 });
