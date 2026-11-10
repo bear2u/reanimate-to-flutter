@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { curveFor, dartTweenSequence, parseTransform, segments } from "./css2flutter";
+import { curveFor, dartTweenSequence, groupAnimations, parseTransform, segments } from "./css2flutter";
 
 describe("curveFor", () => {
   test("shouldMapCubicBezierToFlutterCubic", () => {
@@ -95,5 +95,21 @@ describe("dartTweenSequence", () => {
         "])",
       ].join("\n"),
     );
+  });
+});
+
+const anim = (target: string, delay: number, duration: number, iterations: number | null, keyframes = MARK_KEYFRAMES) => ({
+  kind: "CSSAnimation", name: "mark", target,
+  timing: { delay, duration, iterations, direction: "normal", easing: "linear", fill: "none" },
+  keyframes,
+});
+
+describe("groupAnimations", () => {
+  test("shouldGiveInfiniteLoopsOneControllerAndAPhasePerElement", () => {
+    const g = groupAnimations([anim("i", -240, 2400, null), anim("i", -120, 2400, null), anim("i", 0, 2400, null)], "mark");
+    expect(g).toEqual({
+      name: "mark", periodMs: 2400, repeat: true, reverse: false, keyframes: MARK_KEYFRAMES,
+      elements: [{ target: "i", shift: 0.1 }, { target: "i", shift: 0.05 }, { target: "i", shift: 0 }],
+    });
   });
 });

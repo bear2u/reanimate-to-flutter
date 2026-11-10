@@ -97,3 +97,26 @@ export function dartTweenSequence(segs: Segment[]): string {
   });
   return ["TweenSequence<double>([", ...items, "])"].join("\n");
 }
+
+/** One entry of inspect.json › animations. */
+export type InspectAnimation = {
+  kind?: string; name: string; target: string;
+  timing: { delay: number; duration: number; iterations: number | null; direction?: string; easing?: string; fill?: string };
+  keyframes: Keyframe[];
+};
+/** shift: phase of an infinite loop (0..1), interval: [begin, end] of a finite run as fractions of periodMs. */
+export type Element = { target: string; shift?: number; interval?: [number, number] };
+export type Group = { name: string; periodMs: number; repeat: boolean; reverse: boolean; keyframes: Keyframe[]; elements: Element[] };
+
+const mod1 = (x: number) => round6(((x % 1) + 1) % 1);
+
+/** All animations with one name → one AnimationController and a phase or interval per element. */
+export function groupAnimations(animations: InspectAnimation[], name: string): Group {
+  const list = animations.filter((a) => a.name === name);
+  const first = list[0];
+  const { duration, direction } = first.timing;
+  return {
+    name, periodMs: duration, repeat: true, reverse: direction === "alternate", keyframes: first.keyframes,
+    elements: list.map((a) => ({ target: a.target, shift: mod1(-a.timing.delay / duration) })),
+  };
+}
