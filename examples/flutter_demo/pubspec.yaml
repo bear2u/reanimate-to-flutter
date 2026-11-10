@@ -1,0 +1,31 @@
+name: reanimate_demo
+description: "reanimate-flutter demo: generated motion widgets shown live with their source."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  # the widget sources, so the demo can show and download them
+  assets:
+    - lib/mark_motion.dart
+    - lib/rise_motion.dart
+    - lib/demos/mark_demo.dart
+    - lib/demos/rise_demo.dart
+
+  fonts:
+    - family: JetBrainsMono # OFL, fonts/OFL.txt
+      fonts:
+        - asset: fonts/JetBrainsMono.ttf
