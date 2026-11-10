@@ -52,3 +52,34 @@ export function parseTransform(css: string): Transform2D {
   }
   return t;
 }
+
+export type Keyframe = { offset: number; easing?: string; transform?: string; opacity?: string | number };
+/** One stretch between two keyframes: weight in percent of the iteration, curve null when the value holds. */
+export type Segment = { weight: number; from: number; to: number; curve: string | null };
+export type Prop = "tx" | "ty" | "scale" | "rotate" | "opacity";
+
+const round6 = (n: number) => Math.round(n * 1e6) / 1e6;
+
+function valuesOf(k: Keyframe): Partial<Record<Prop, number>> {
+  const v: Partial<Record<Prop, number>> = {};
+  if (k.transform !== undefined) Object.assign(v, parseTransform(k.transform));
+  if (k.opacity !== undefined) v.opacity = Number(k.opacity);
+  return v;
+}
+
+/** Keyframes → per-property segments, keeping only the properties that change. */
+export function segments(keyframes: Keyframe[]): Partial<Record<Prop, Segment[]>> {
+  const values = keyframes.map(valuesOf);
+  const out: Partial<Record<Prop, Segment[]>> = {};
+  for (const prop of ["tx", "ty", "scale", "rotate", "opacity"] as Prop[]) {
+    if (!values.some((v) => v[prop] !== undefined)) continue;
+    const segs: Segment[] = [];
+    for (let i = 0; i + 1 < keyframes.length; i++) {
+      const from = values[i][prop]!, to = values[i + 1][prop]!;
+      const weight = round6((keyframes[i + 1].offset - keyframes[i].offset) * 100);
+      segs.push({ weight, from, to, curve: from === to ? null : curveFor(keyframes[i].easing ?? "ease") });
+    }
+    if (segs.some((s) => s.curve !== null)) out[prop] = segs;
+  }
+  return out;
+}

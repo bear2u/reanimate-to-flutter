@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { curveFor, parseTransform } from "./css2flutter";
+import { curveFor, parseTransform, segments } from "./css2flutter";
 
 describe("curveFor", () => {
   test("shouldMapCubicBezierToFlutterCubic", () => {
@@ -47,5 +47,29 @@ describe("parseTransform", () => {
     expect(t.ty).toBe(4);
     expect(t.scale).toBeCloseTo(2);
     expect(t.rotate).toBeCloseTo(Math.PI / 6);
+  });
+});
+
+// the reanimate.niazmorshed.dev logo mark, as inspect.json reports it
+const OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+const MARK_KEYFRAMES = [
+  { offset: 0, easing: OUT, transform: "translate(0px)" },
+  { offset: 0.12, easing: OUT, transform: "translate(0px)" },
+  { offset: 0.5, easing: OUT, transform: "translate(20px)" },
+  { offset: 0.62, easing: OUT, transform: "translate(20px)" },
+  { offset: 1, easing: OUT, transform: "translate(0px)" },
+];
+
+describe("segments", () => {
+  test("shouldSplitKeyframesIntoWeightedSegmentsPerChangingProperty", () => {
+    const cubic = "Cubic(0.16, 1.0, 0.3, 1.0)";
+    expect(segments(MARK_KEYFRAMES)).toEqual({
+      tx: [
+        { weight: 12, from: 0, to: 0, curve: null },
+        { weight: 38, from: 0, to: 20, curve: cubic },
+        { weight: 12, from: 20, to: 20, curve: null },
+        { weight: 38, from: 20, to: 0, curve: cubic },
+      ],
+    });
   });
 });
