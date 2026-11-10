@@ -176,4 +176,11 @@ describe("CLI", () => {
     expect(r.exitCode).toBe(0);
     expect(readFileSync(out, "utf8")).toContain("class MarkMotion extends StatefulWidget {");
   });
+
+  test("shouldListTheAvailableNamesWhenTheNameIsUnknown", () => {
+    const { file } = inspectFile();
+    const r = cli(["--inspect", file, "--name", "rise", "--widget", "RiseMotion"]);
+    expect(r.exitCode).toBe(1);
+    expect(r.stderr.toString()).toContain('no animation named "rise" in inspect.json; found: mark');
+  });
 });

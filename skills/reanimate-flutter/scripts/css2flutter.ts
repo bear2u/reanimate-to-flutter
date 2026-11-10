@@ -113,6 +113,10 @@ const mod1 = (x: number) => round6(((x % 1) + 1) % 1);
 /** All animations with one name → one AnimationController and a phase or interval per element. */
 export function groupAnimations(animations: InspectAnimation[], name: string): Group {
   const list = animations.filter((a) => a.name === name);
+  if (!list.length) {
+    const found = [...new Set(animations.map((a) => a.name))].join(", ") || "none";
+    throw new Error(`no animation named "${name}" in inspect.json; found: ${found}`);
+  }
   const first = list[0];
   const { duration, direction } = first.timing;
   const base = { name, reverse: direction === "alternate", keyframes: first.keyframes };
@@ -239,6 +243,8 @@ if (import.meta.main) {
   if (a.help || !a.inspect || !a.name || !a.widget) { console.log(HELP); process.exit(a.help ? 0 : 1); }
   const { readFileSync, writeFileSync } = await import("node:fs");
   const inspect = JSON.parse(readFileSync(a.inspect, "utf8"));
-  const dart = emitWidget(groupAnimations(inspect.animations ?? [], a.name), a.widget);
+  let dart: string;
+  try { dart = emitWidget(groupAnimations(inspect.animations ?? [], a.name), a.widget); }
+  catch (e) { console.error(String((e as Error).message)); process.exit(1); }
   if (a.out) { writeFileSync(a.out, dart); console.log(`wrote ${a.out}`); } else process.stdout.write(dart);
 }
