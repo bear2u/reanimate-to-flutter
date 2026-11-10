@@ -115,8 +115,13 @@ export function groupAnimations(animations: InspectAnimation[], name: string): G
   const list = animations.filter((a) => a.name === name);
   const first = list[0];
   const { duration, direction } = first.timing;
+  const base = { name, reverse: direction === "alternate", keyframes: first.keyframes };
+  if (first.timing.iterations === null) {
+    return { ...base, periodMs: duration, repeat: true, elements: list.map((a) => ({ target: a.target, shift: mod1(-a.timing.delay / duration) })) };
+  }
+  const periodMs = Math.max(...list.map((a) => a.timing.delay + a.timing.duration));
   return {
-    name, periodMs: duration, repeat: true, reverse: direction === "alternate", keyframes: first.keyframes,
-    elements: list.map((a) => ({ target: a.target, shift: mod1(-a.timing.delay / duration) })),
+    ...base, periodMs, repeat: false,
+    elements: list.map((a) => ({ target: a.target, interval: [round6(a.timing.delay / periodMs), round6((a.timing.delay + a.timing.duration) / periodMs)] as [number, number] })),
   };
 }

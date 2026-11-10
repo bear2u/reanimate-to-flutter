@@ -112,4 +112,15 @@ describe("groupAnimations", () => {
       elements: [{ target: "i", shift: 0.1 }, { target: "i", shift: 0.05 }, { target: "i", shift: 0 }],
     });
   });
+
+  test("shouldGiveFiniteStaggerAnIntervalPerElementOverTheWholeRun", () => {
+    const g = groupAnimations([anim(".card", 0, 600, 1), anim(".card", 120, 600, 1), anim(".card", 240, 600, 1)], "mark");
+    expect(g.periodMs).toBe(840);
+    expect(g.repeat).toBe(false);
+    expect(g.elements).toEqual([
+      { target: ".card", interval: [0, 0.714286] },
+      { target: ".card", interval: [0.142857, 0.857143] },
+      { target: ".card", interval: [0.285714, 1] },
+    ]);
+  });
 });
