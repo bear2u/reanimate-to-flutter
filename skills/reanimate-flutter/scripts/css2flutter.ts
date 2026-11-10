@@ -83,3 +83,17 @@ export function segments(keyframes: Keyframe[]): Partial<Record<Prop, Segment[]>
   }
   return out;
 }
+
+// `Curves.x` are already constants; constructed curves need `const` to stay cheap in a build method.
+const constCurve = (curve: string) => (curve.startsWith("Curves.") ? curve : `const ${curve}`);
+
+/** Segments → a Dart `TweenSequence<double>` expression. */
+export function dartTweenSequence(segs: Segment[]): string {
+  const items = segs.map((s) => {
+    const tween = s.curve === null
+      ? `ConstantTween<double>(${dartDouble(s.from)})`
+      : `Tween<double>(begin: ${dartDouble(s.from)}, end: ${dartDouble(s.to)}).chain(CurveTween(curve: ${constCurve(s.curve)}))`;
+    return `  TweenSequenceItem(tween: ${tween}, weight: ${dartDouble(s.weight)}),`;
+  });
+  return ["TweenSequence<double>([", ...items, "])"].join("\n");
+}

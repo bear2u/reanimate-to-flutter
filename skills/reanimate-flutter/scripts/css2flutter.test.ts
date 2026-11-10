@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { curveFor, parseTransform, segments } from "./css2flutter";
+import { curveFor, dartTweenSequence, parseTransform, segments } from "./css2flutter";
 
 describe("curveFor", () => {
   test("shouldMapCubicBezierToFlutterCubic", () => {
@@ -80,5 +80,20 @@ describe("segments", () => {
     expect(s.opacity).toEqual([{ weight: 100, from: 0, to: 1, curve: "Curves.easeIn" }]);
     expect(s.ty).toEqual([{ weight: 100, from: 40, to: 0, curve: "Curves.easeIn" }]);
     expect(s.tx).toBeUndefined();
+  });
+});
+
+describe("dartTweenSequence", () => {
+  test("shouldEmitTweenSequenceWithConstantTweenForHolds", () => {
+    expect(dartTweenSequence(segments(MARK_KEYFRAMES).tx!)).toBe(
+      [
+        "TweenSequence<double>([",
+        "  TweenSequenceItem(tween: ConstantTween<double>(0.0), weight: 12.0),",
+        "  TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: 20.0).chain(CurveTween(curve: const Cubic(0.16, 1.0, 0.3, 1.0))), weight: 38.0),",
+        "  TweenSequenceItem(tween: ConstantTween<double>(20.0), weight: 12.0),",
+        "  TweenSequenceItem(tween: Tween<double>(begin: 20.0, end: 0.0).chain(CurveTween(curve: const Cubic(0.16, 1.0, 0.3, 1.0))), weight: 38.0),",
+        "])",
+      ].join("\n"),
+    );
   });
 });
