@@ -40,6 +40,24 @@ The [skills CLI](https://skills.sh) asks which agents to set up; add `-a claude-
 
 Needs [Bun](https://bun.sh) 1.1 or later, on macOS or Linux (Windows is untested). The first run installs a static ffmpeg into the skill's folder and Playwright's Chromium into Playwright's usual cache, about 250 MB together. No API keys. Other agents that read `SKILL.md` can install it too, but it has only been tested with Claude Code.
 
+## Flutter
+
+This fork adds a second skill, **reanimate-flutter**. It turns the motion reanimate recorded into a Flutter widget and checks the widget against the original, frame by frame, through a Flutter web build.
+
+```sh
+npx skills add bear2u/reanimate-to-flutter -g -a claude-code
+```
+
+```text
+/reanimate-flutter the logo mark on https://example.com, as a Flutter widget in lib/widgets/logo_mark.dart
+```
+
+- `scripts/css2flutter.ts` reads `inspect.json` and writes an `AnimationController` + `TweenSequence` widget. It keeps the keyframe offsets, holds, per-keyframe easings, loop phases and stagger intervals.
+- `templates/main.dart` is a web harness. It places the widget where the original was, so `capture.ts` films the same region.
+- `scripts/serve.ts` serves `build/web` for the capture.
+
+Needs the Flutter SDK. Run the tests with `bun test` in `skills/reanimate-flutter/scripts`; add `REANIMATE_FLUTTER_IT=1` to also run `flutter analyze` on generated widgets.
+
 ## How it works
 
 1. **Record.** It films the reference in a headless browser at a fixed viewport and frame rate: a video, numbered frames, every CSS and Web Animations API animation it finds, and the position of chosen elements on every frame. For canvas and WebGL it also traces the GPU calls (shaders, uniforms, draw calls, the three.js scene) on a virtual clock that makes every capture identical.
@@ -99,7 +117,7 @@ On live stripe.com this recovers the issuing card's four-pass composite, its sha
 
 ## Repository
 
-Only `skills/reanimate/` is installed by the skills CLI; `site/` is the website with the examples running live ([`site/README.md`](site/README.md)).
+The skills CLI installs `skills/reanimate/` and, from this fork, `skills/reanimate-flutter/`; `site/` is the website with the examples running live ([`site/README.md`](site/README.md)).
 
 <details>
 <summary>What's in the skill</summary>
