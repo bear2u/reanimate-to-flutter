@@ -5,4 +5,12 @@ describe("curveFor", () => {
   test("shouldMapCubicBezierToFlutterCubic", () => {
     expect(curveFor("cubic-bezier(0.16, 1, 0.3, 1)")).toBe("Cubic(0.16, 1.0, 0.3, 1.0)");
   });
+
+  test("shouldMapCssKeywordsToFlutterCurves", () => {
+    expect(curveFor("linear")).toBe("Curves.linear");
+    expect(curveFor("ease")).toBe("Curves.ease");
+    expect(curveFor("ease-in")).toBe("Curves.easeIn");
+    expect(curveFor("ease-out")).toBe("Curves.easeOut");
+    expect(curveFor("ease-in-out")).toBe("Curves.easeInOut");
+  });
 });
