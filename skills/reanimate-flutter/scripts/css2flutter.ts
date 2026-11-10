@@ -141,7 +141,15 @@ export function emitWidget(group: Group, className: string): string {
   const segs = segments(group.keyframes);
   const props = (Object.keys(segs) as Prop[]);
   const sequences = props.map((p) => `  static final Animatable<double> _${p} = ${indent(dartTweenSequence(segs[p]!), "  ")};`);
-  const shifts = group.elements.map((e) => dartDouble(e.shift ?? 0)).join(", ");
+  const timeline = group.repeat
+    ? `  /// Phase of each element in the loop (CSS negative delays), as a fraction of one iteration.
+  static const List<double> _shift = [${group.elements.map((e) => dartDouble(e.shift ?? 0)).join(", ")}];
+
+  double _t(int i) => (_controller.value + _shift[i]) % 1.0;`
+    : `  /// When each element runs (CSS delay + duration), as a fraction of the whole run.
+  static const List<Interval> _interval = [${group.elements.map((e) => `Interval(${e.interval!.map(dartDouble).join(", ")})`).join(", ")}];
+
+  double _t(int i) => _interval[i].transform(_controller.value);`;
   const tx = valueAt(segs, "tx", "0.0"), ty = valueAt(segs, "ty", "0.0");
   const wraps: string[] = [];
   if (segs.scale) wraps.push("w = Transform.scale(scale: _scale.transform(t), child: w);");
@@ -173,10 +181,7 @@ class ${className}State extends State<${className}> with SingleTickerProviderSta
 
 ${sequences.join("\n\n")}
 
-  /// Phase of each element in the loop (CSS negative delays), as a fraction of one iteration.
-  static const List<double> _shift = [${shifts}];
-
-  double _t(int i) => (_controller.value + _shift[i]) % 1.0;
+${timeline}
 
   @override
   void initState() {

@@ -140,4 +140,19 @@ describe("emitWidget", () => {
     expect(dart).not.toContain("_ty");
     expect(dart).not.toContain("Opacity(");
   });
+
+  test("shouldEmitAFiniteStaggerWithAnIntervalPerElement", () => {
+    const rise = [
+      { offset: 0, easing: "ease-out", opacity: "0", transform: "translateY(40px)" },
+      { offset: 1, easing: "ease-out", opacity: "1", transform: "none" },
+    ];
+    const g = groupAnimations([anim(".card", 0, 600, 1, rise), anim(".card", 120, 600, 1, rise)], "mark");
+    const dart = emitWidget(g, "RiseMotion");
+    expect(dart).toContain("void restart() => _controller..reset()..forward();");
+    expect(dart).toContain("static const List<Interval> _interval = [Interval(0.0, 0.833333), Interval(0.166667, 1.0)];");
+    expect(dart).toContain("double _t(int i) => _interval[i].transform(_controller.value);");
+    expect(dart).not.toContain("_shift");
+    expect(dart).toContain("w = Transform.translate(offset: Offset(0.0, _ty.transform(t)), child: w);");
+    expect(dart).toContain("w = Opacity(opacity: _opacity.transform(t).clamp(0.0, 1.0), child: w);");
+  });
 });
