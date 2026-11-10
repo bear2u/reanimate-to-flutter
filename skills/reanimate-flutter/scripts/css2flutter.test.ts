@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { curveFor, dartTweenSequence, groupAnimations, parseTransform, segments } from "./css2flutter";
+import { curveFor, dartTweenSequence, emitWidget, groupAnimations, parseTransform, segments } from "./css2flutter";
 
 describe("curveFor", () => {
   test("shouldMapCubicBezierToFlutterCubic", () => {
@@ -122,5 +122,22 @@ describe("groupAnimations", () => {
       { target: ".card", interval: [0.142857, 0.857143] },
       { target: ".card", interval: [0.285714, 1] },
     ]);
+  });
+});
+
+describe("emitWidget", () => {
+  test("shouldEmitALoopingMotionWidgetWithPhasesAndARestartHook", () => {
+    const g = groupAnimations([anim("i", -240, 2400, null), anim("i", -120, 2400, null), anim("i", 0, 2400, null)], "mark");
+    const dart = emitWidget(g, "MarkMotion");
+    expect(dart).toContain("class MarkMotion extends StatefulWidget {");
+    expect(dart).toContain("class MarkMotionState extends State<MarkMotion> with SingleTickerProviderStateMixin {");
+    expect(dart).toContain("duration: const Duration(milliseconds: 2400)");
+    expect(dart).toContain("void restart() => _controller..reset()..repeat();");
+    expect(dart).toContain("static const List<double> _shift = [0.1, 0.05, 0.0];");
+    expect(dart).toContain("double _t(int i) => (_controller.value + _shift[i]) % 1.0;");
+    expect(dart).toContain("static final Animatable<double> _tx = TweenSequence<double>([");
+    expect(dart).toContain("w = Transform.translate(offset: Offset(_tx.transform(t), 0.0), child: w);");
+    expect(dart).not.toContain("_ty");
+    expect(dart).not.toContain("Opacity(");
   });
 });
