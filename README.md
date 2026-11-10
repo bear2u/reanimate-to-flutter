@@ -9,6 +9,34 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-171717?style=flat-square" alt="MIT license"></a>
 </p>
 
+<p align="center"><a href="#flutter-reanimate-flutter"><img src="https://img.shields.io/badge/NEW-Flutter_widgets-02569B?style=flat-square&logo=flutter&logoColor=white" alt="New: Flutter widgets"></a></p>
+
+## Flutter: reanimate-flutter
+
+This fork adds a second skill, **reanimate-flutter**. It turns the motion reanimate recorded into a **Flutter widget**, then films a Flutter web build of that widget the same way as the original and compares the two frame by frame.
+
+```sh
+npx skills add bear2u/reanimate-to-flutter -g -a claude-code
+```
+
+```text
+/reanimate-flutter the logo mark on https://example.com, as a Flutter widget in lib/widgets/logo_mark.dart
+/reanimate-flutter this loader in ~/Downloads/loader.mov, into lib/widgets/loader.dart
+```
+
+| Step | What it does |
+|---|---|
+| 1. Record | reanimate captures the original and writes `inspect.json` and `spec.md` |
+| 2. Generate | [`css2flutter.ts`](skills/reanimate-flutter/scripts/css2flutter.ts) writes an `AnimationController` + `TweenSequence` widget, keeping the keyframe offsets, holds, per-keyframe easings, loop phases and stagger intervals |
+| 3. Verify | [`templates/main.dart`](skills/reanimate-flutter/templates/main.dart) places the widget where the original was; `flutter build web` + [`serve.ts`](skills/reanimate-flutter/scripts/serve.ts) + reanimate's `capture.ts` / `compare.ts` measure the difference |
+
+On the reanimate.niazmorshed.dev logo mark, the Flutter clone matched with a **0.60 %** mean pixel mismatch and a timing error of **−67 ms** at the start (limits: 2 % and ±80 ms).
+
+- **Demo:** [`examples/flutter_demo`](examples/flutter_demo) shows the generated widgets running, with their source, copy and download (`flutter run -d chrome`).
+- **Docs:** [`SKILL.md`](skills/reanimate-flutter/SKILL.md) for the workflow, [`mapping.md`](skills/reanimate-flutter/references/mapping.md) for the web → Flutter mapping (easing, stagger, loops, springs, scroll, hover).
+- **Requirements:** the Flutter SDK, on top of reanimate's own.
+- **Tests:** `bun test` in `skills/reanimate-flutter/scripts`. Add `REANIMATE_FLUTTER_IT=1` to also run `flutter analyze` on generated widgets.
+
 <p align="center">
   <a href="https://reanimate.niazmorshed.dev/demo.mp4"><img src=".github/assets/demo.webp" width="760" alt="Moments from the demo video: /reanimate slides in; three browsers record widgets on stripe.com, resend.com and clerk.com; the copies are measured against them until the difference is gone; the 18 examples turn on a helix; the install command types itself in."></a>
 </p>
@@ -39,24 +67,6 @@ The [skills CLI](https://skills.sh) asks which agents to set up; add `-a claude-
 ```
 
 Needs [Bun](https://bun.sh) 1.1 or later, on macOS or Linux (Windows is untested). The first run installs a static ffmpeg into the skill's folder and Playwright's Chromium into Playwright's usual cache, about 250 MB together. No API keys. Other agents that read `SKILL.md` can install it too, but it has only been tested with Claude Code.
-
-## Flutter
-
-This fork adds a second skill, **reanimate-flutter**. It turns the motion reanimate recorded into a Flutter widget and checks the widget against the original, frame by frame, through a Flutter web build.
-
-```sh
-npx skills add bear2u/reanimate-to-flutter -g -a claude-code
-```
-
-```text
-/reanimate-flutter the logo mark on https://example.com, as a Flutter widget in lib/widgets/logo_mark.dart
-```
-
-- `scripts/css2flutter.ts` reads `inspect.json` and writes an `AnimationController` + `TweenSequence` widget. It keeps the keyframe offsets, holds, per-keyframe easings, loop phases and stagger intervals.
-- `templates/main.dart` is a web harness. It places the widget where the original was, so `capture.ts` films the same region.
-- `scripts/serve.ts` serves `build/web` for the capture.
-
-Needs the Flutter SDK. Run the tests with `bun test` in `skills/reanimate-flutter/scripts`; add `REANIMATE_FLUTTER_IT=1` to also run `flutter analyze` on generated widgets.
 
 ## How it works
 
@@ -117,7 +127,7 @@ On live stripe.com this recovers the issuing card's four-pass composite, its sha
 
 ## Repository
 
-The skills CLI installs `skills/reanimate/` and, from this fork, `skills/reanimate-flutter/`; `site/` is the website with the examples running live ([`site/README.md`](site/README.md)).
+The skills CLI installs `skills/reanimate/` and, from this fork, `skills/reanimate-flutter/`; `site/` is the website with the examples running live ([`site/README.md`](site/README.md)); `examples/flutter_demo/` is the Flutter demo app.
 
 <details>
 <summary>What's in the skill</summary>
