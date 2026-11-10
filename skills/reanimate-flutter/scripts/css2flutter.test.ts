@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { curveFor, dartTweenSequence, emitWidget, groupAnimations, parseTransform, segments } from "./css2flutter";
 
 describe("curveFor", () => {
@@ -154,5 +157,23 @@ describe("emitWidget", () => {
     expect(dart).not.toContain("_shift");
     expect(dart).toContain("w = Transform.translate(offset: Offset(0.0, _ty.transform(t)), child: w);");
     expect(dart).toContain("w = Opacity(opacity: _opacity.transform(t).clamp(0.0, 1.0), child: w);");
+  });
+});
+
+describe("CLI", () => {
+  const cli = (args: string[]) => Bun.spawnSync(["bun", join(import.meta.dir, "css2flutter.ts"), ...args], { stderr: "pipe", stdout: "pipe" });
+  const inspectFile = () => {
+    const dir = mkdtempSync(join(tmpdir(), "css2flutter-"));
+    const file = join(dir, "inspect.json");
+    writeFileSync(file, JSON.stringify({ animations: [anim("i", -240, 2400, null), anim("i", 0, 2400, null)] }));
+    return { dir, file };
+  };
+
+  test("shouldWriteTheWidgetForTheNamedAnimation", () => {
+    const { dir, file } = inspectFile();
+    const out = join(dir, "mark_motion.dart");
+    const r = cli(["--inspect", file, "--name", "mark", "--widget", "MarkMotion", "--out", out]);
+    expect(r.exitCode).toBe(0);
+    expect(readFileSync(out, "utf8")).toContain("class MarkMotion extends StatefulWidget {");
   });
 });

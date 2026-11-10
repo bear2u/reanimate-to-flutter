@@ -217,3 +217,28 @@ ${timeline}
 }
 `;
 }
+
+const HELP = `css2flutter.ts — turn an animation from reanimate's inspect.json into a Flutter motion widget.
+
+  bun css2flutter.ts --inspect <ref/inspect.json> --name <@keyframes name> --widget <ClassName> [--out <file.dart>]
+
+  --inspect   inspect.json written by reanimate's capture.ts
+  --name      the animation name (inspect.json › animations[].name); all elements running it share one controller
+  --widget    Dart class name of the generated widget, e.g. MarkMotion
+  --out       where to write the Dart file (default: stdout)
+`;
+
+function flags(argv: string[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (let i = 0; i < argv.length; i++) if (argv[i].startsWith("--")) out[argv[i].slice(2)] = argv[i + 1]?.startsWith("--") ? "true" : argv[++i] ?? "true";
+  return out;
+}
+
+if (import.meta.main) {
+  const a = flags(process.argv.slice(2));
+  if (a.help || !a.inspect || !a.name || !a.widget) { console.log(HELP); process.exit(a.help ? 0 : 1); }
+  const { readFileSync, writeFileSync } = await import("node:fs");
+  const inspect = JSON.parse(readFileSync(a.inspect, "utf8"));
+  const dart = emitWidget(groupAnimations(inspect.animations ?? [], a.name), a.widget);
+  if (a.out) { writeFileSync(a.out, dart); console.log(`wrote ${a.out}`); } else process.stdout.write(dart);
+}
