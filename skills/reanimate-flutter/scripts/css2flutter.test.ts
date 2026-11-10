@@ -72,4 +72,13 @@ describe("segments", () => {
       ],
     });
   });
+  test("shouldIncludeOpacityAndUseTheStartKeyframeEasing", () => {
+    const s = segments([
+      { offset: 0, easing: "ease-in", opacity: "0", transform: "translateY(40px)" },
+      { offset: 1, easing: "linear", opacity: "1", transform: "none" },
+    ]);
+    expect(s.opacity).toEqual([{ weight: 100, from: 0, to: 1, curve: "Curves.easeIn" }]);
+    expect(s.ty).toEqual([{ weight: 100, from: 40, to: 0, curve: "Curves.easeIn" }]);
+    expect(s.tx).toBeUndefined();
+  });
 });
