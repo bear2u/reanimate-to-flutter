@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { curveFor } from "./css2flutter";
+import { curveFor, parseTransform } from "./css2flutter";
 
 describe("curveFor", () => {
   test("shouldMapCubicBezierToFlutterCubic", () => {
@@ -16,5 +16,11 @@ describe("curveFor", () => {
 
   test("shouldRejectUnsupportedEasingWithAHint", () => {
     expect(() => curveFor("steps(4, end)")).toThrow(/unsupported easing "steps\(4, end\)".*mapping\.md/);
+  });
+});
+
+describe("parseTransform", () => {
+  test("shouldReturnIdentityForNone", () => {
+    expect(parseTransform("none")).toEqual({ tx: 0, ty: 0, scale: 1, rotate: 0 });
   });
 });

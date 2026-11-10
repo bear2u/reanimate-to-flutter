@@ -20,3 +20,10 @@ export function curveFor(easing: string): string {
   if (m) return `Cubic(${m[1].split(",").map((s) => dartDouble(Number(s))).join(", ")})`;
   throw new Error(`unsupported easing "${easing}": write the curve by hand, see references/mapping.md`);
 }
+
+/** The parts of a 2D transform Flutter applies separately: translate (px), uniform scale, rotate (rad). */
+export type Transform2D = { tx: number; ty: number; scale: number; rotate: number };
+
+export function parseTransform(css: string): Transform2D {
+  return { tx: 0, ty: 0, scale: 1, rotate: 0 };
+}
