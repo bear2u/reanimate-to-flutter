@@ -13,4 +13,8 @@ describe("curveFor", () => {
     expect(curveFor("ease-out")).toBe("Curves.easeOut");
     expect(curveFor("ease-in-out")).toBe("Curves.easeInOut");
   });
+
+  test("shouldRejectUnsupportedEasingWithAHint", () => {
+    expect(() => curveFor("steps(4, end)")).toThrow(/unsupported easing "steps\(4, end\)".*mapping\.md/);
+  });
 });

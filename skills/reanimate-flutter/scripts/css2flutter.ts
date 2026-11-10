@@ -18,5 +18,5 @@ export function curveFor(easing: string): string {
   if (keyword) return keyword;
   const m = easing.trim().match(/^cubic-bezier\(([^)]*)\)$/);
   if (m) return `Cubic(${m[1].split(",").map((s) => dartDouble(Number(s))).join(", ")})`;
-  throw new Error(`unsupported easing: ${easing}`);
+  throw new Error(`unsupported easing "${easing}": write the curve by hand, see references/mapping.md`);
 }
