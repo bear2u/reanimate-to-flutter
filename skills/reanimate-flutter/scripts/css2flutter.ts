@@ -42,6 +42,13 @@ export function parseTransform(css: string): Transform2D {
     else if (fn === "translateY") t.ty += px(args[0]);
     else if (fn === "scale") t.scale *= parseFloat(args[0]);
     else if (fn === "rotate") t.rotate += radians(args[0]);
+    else if (fn === "matrix") {
+      // computed styles: a uniform scale + rotation + translation (skew is not representable here)
+      const [a, b, , , e, f] = args.map(Number);
+      t.tx += e; t.ty += f;
+      t.scale *= Math.hypot(a, b);
+      t.rotate += Math.atan2(b, a);
+    }
   }
   return t;
 }

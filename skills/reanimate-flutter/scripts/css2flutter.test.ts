@@ -38,4 +38,14 @@ describe("parseTransform", () => {
     expect(parseTransform("rotate(0.25turn)").rotate).toBeCloseTo(Math.PI / 2);
     expect(parseTransform("translateY(10px) scale(1.2) rotate(-45deg)")).toEqual({ tx: 0, ty: 10, scale: 1.2, rotate: -Math.PI / 4 });
   });
+
+  test("shouldDecomposeComputedMatrix", () => {
+    expect(parseTransform("matrix(1, 0, 0, 1, 18.9784, 0)")).toEqual({ tx: 18.9784, ty: 0, scale: 1, rotate: 0 });
+    const c = Math.cos(Math.PI / 6) * 2, s = Math.sin(Math.PI / 6) * 2;
+    const t = parseTransform(`matrix(${c}, ${s}, ${-s}, ${c}, 3, 4)`);
+    expect(t.tx).toBe(3);
+    expect(t.ty).toBe(4);
+    expect(t.scale).toBeCloseTo(2);
+    expect(t.rotate).toBeCloseTo(Math.PI / 6);
+  });
 });
