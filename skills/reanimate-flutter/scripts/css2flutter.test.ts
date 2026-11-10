@@ -30,4 +30,12 @@ describe("parseTransform", () => {
     expect(parseTransform("translateX(-8px)")).toEqual({ tx: -8, ty: 0, scale: 1, rotate: 0 });
     expect(parseTransform("translateY(40px)")).toEqual({ tx: 0, ty: 40, scale: 1, rotate: 0 });
   });
+
+  test("shouldReadScaleAndRotateInEveryAngleUnit", () => {
+    expect(parseTransform("scale(0.5)").scale).toBe(0.5);
+    expect(parseTransform("rotate(90deg)").rotate).toBeCloseTo(Math.PI / 2);
+    expect(parseTransform("rotate(1rad)").rotate).toBeCloseTo(1);
+    expect(parseTransform("rotate(0.25turn)").rotate).toBeCloseTo(Math.PI / 2);
+    expect(parseTransform("translateY(10px) scale(1.2) rotate(-45deg)")).toEqual({ tx: 0, ty: 10, scale: 1.2, rotate: -Math.PI / 4 });
+  });
 });

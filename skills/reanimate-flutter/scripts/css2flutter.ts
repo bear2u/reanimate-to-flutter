@@ -26,6 +26,13 @@ export type Transform2D = { tx: number; ty: number; scale: number; rotate: numbe
 
 const px = (v: string) => parseFloat(v);
 
+const ANGLE_TO_RAD: Record<string, number> = { deg: Math.PI / 180, rad: 1, turn: 2 * Math.PI, grad: Math.PI / 200 };
+function radians(v: string): number {
+  const m = v.match(/^(-?[\d.]+)([a-z]*)$/);
+  if (!m) throw new Error(`unreadable angle: ${v}`);
+  return parseFloat(m[1]) * (ANGLE_TO_RAD[m[2] || "deg"] ?? 1);
+}
+
 export function parseTransform(css: string): Transform2D {
   const t: Transform2D = { tx: 0, ty: 0, scale: 1, rotate: 0 };
   for (const [, fn, rawArgs] of css.matchAll(/([a-zA-Z]+)\(([^)]*)\)/g)) {
@@ -33,6 +40,8 @@ export function parseTransform(css: string): Transform2D {
     if (fn === "translate") { t.tx += px(args[0]); t.ty += args[1] ? px(args[1]) : 0; }
     else if (fn === "translateX") t.tx += px(args[0]);
     else if (fn === "translateY") t.ty += px(args[0]);
+    else if (fn === "scale") t.scale *= parseFloat(args[0]);
+    else if (fn === "rotate") t.rotate += radians(args[0]);
   }
   return t;
 }
